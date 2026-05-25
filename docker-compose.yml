@@ -1,0 +1,8 @@
+services:
+  veille-bot:
+    build: .
+    container_name: veille-bot
+    volumes:
+      - ./data:/app/data
+    env_file: .env
+    restart: "no"
