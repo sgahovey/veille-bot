@@ -2,7 +2,7 @@
 
 ## 1. Description du projet
 
-`veille-bot` est un bot Python qui, **chaque matin à 7h (heure de Paris)**, agrège
+`veille-bot` est un bot Python qui, **chaque matin à 7h (heure de La Réunion, UTC+4)**, agrège
 11 flux RSS techniques et sécurité, sélectionne via **Gemini 2.5 Flash** les articles
 les plus pertinents pour un développeur en alternance, et publie un **digest structuré**
 sur un canal Discord via webhook.
@@ -108,7 +108,7 @@ La couverture du module `src/domain` est rapportée en console.
 1. Repo GitHub → **Settings → Secrets and variables → Actions → New repository secret** :
    - `GEMINI_API_KEY` — votre clé Google AI Studio
    - `DISCORD_WEBHOOK_URL` — l'URL complète du webhook Discord
-2. Le cron `0 6 * * *` (6h UTC) se déclenche automatiquement chaque jour.
+2. Le cron `0 3 * * *` (3h UTC = 7h La Réunion) se déclenche automatiquement chaque jour.
 3. Déclenchement manuel possible : onglet **Actions → Veille quotidienne → Run workflow**.
 
 À la fin de chaque exécution réussie, le workflow commite automatiquement

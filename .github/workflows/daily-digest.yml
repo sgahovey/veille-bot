@@ -2,7 +2,7 @@ name: Veille quotidienne
 
 on:
   schedule:
-    - cron: '0 6 * * *'   # 6h UTC = 7h Paris (hiver) / 8h Paris (été)
+    - cron: '0 3 * * *'   # 3h UTC = 7h La Réunion (UTC+4, pas de DST)
   workflow_dispatch:       # Déclenchement manuel pour tests
 
 permissions:
