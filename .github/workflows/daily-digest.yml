@@ -38,6 +38,17 @@ jobs:
           LOG_LEVEL: INFO
         run: python -m src.main
 
+      - name: Synchroniser avec le remote avant l'auto-commit
+        # Evite les rejets de push si l'utilisateur a push pendant le run.
+        # --autostash met de cote la modification non commitee de seen.db,
+        # le pull --rebase ramene les commits distants, puis pop restaure
+        # nos changements -> l'auto-commit suivant peut fast-forward.
+        if: success()
+        run: |
+          git config user.name "veille-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git pull --rebase --autostash origin main
+
       - name: Persist seen.db
         if: success()
         uses: stefanzweifel/git-auto-commit-action@v5
