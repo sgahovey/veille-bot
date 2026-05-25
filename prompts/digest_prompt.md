@@ -27,7 +27,7 @@ les articles qui touchent à ces technologies :
 
 ### Sujets transverses TOUJOURS pertinents
 - Sécurité applicative (CVE, OWASP, failles)
-- IA générative (modèles, APIs, intégration dans le dev)
+- IA générative appliquée au dev web (intégration API, prompts, outils dev)
 - Éco-conception logicielle
 - Accessibilité (RGAA, WCAG)
 - Bonnes pratiques de développement
@@ -74,29 +74,35 @@ sans markdown, sans backticks :
 - Faille zero-day exploitée activement
 - Vulnérabilité dans une bibliothèque PHP populaire (Composer)
 - Attaque supply chain (npm, Packagist, GitHub Actions)
+- Faille majeure dans Bootstrap ou jQuery
 
 ### "important" (max 2 par jour)
 - Nouvelle version majeure de Symfony, PHP, MySQL, PostgreSQL, Docker
 - Mise à jour OWASP Top 10
 - Nouveau guide RGAA ou WCAG
-- Bonne pratique de sécurité applicable à PHP/Symfony
-- Annonce officielle d'un acteur majeur de l'IA avec impact concret pour les développeurs
+- Bonne pratique de sécurité applicable à PHP/Symfony/SQL
+- Annonce officielle d'un acteur majeur de l'IA (OpenAI, Anthropic, Google) 
+  avec impact CONCRET pour les développeurs (nouvelles features API, SDK)
 
 ### "interessant" (max 3 par jour)
 - Tutoriel technique de qualité sur PHP/Symfony/MySQL/PostgreSQL
 - Retour d'expérience sur Docker, GitHub Actions, CI/CD
-- Article sur l'intégration d'IA dans le développement web
-- Article sur Bootstrap 5, CSS moderne, JS vanilla
+- Article sur l'intégration d'IA dans le développement web (côté dev backend)
+- Article sur CSS moderne, Bootstrap 5, JS vanilla, accessibilité
 - Guide d'optimisation BDD relationnelle
+- Article transverse de qualité sur la sécurité applicative ou l'architecture
 
 ### "ignore" (par défaut pour tout le reste)
-- Articles centrés sur React, Vue, Angular, Svelte, Next.js
+- Articles centrés sur React, Vue, Angular, Svelte, Next.js, Nuxt
 - Articles centrés sur Node.js comme stack backend principale
 - Java, Spring, Kotlin, Scala, C#, .NET, Ruby, Rust, Go
 - Python comme framework web (Django, FastAPI, Flask)
 - Développement mobile (Swift, Kotlin Android, Flutter, React Native)
 - Crypto, NFT, Web3, blockchain
+- Articles sur des agents IA hyper-spécialisés ou plateformes AWS exotiques 
+  (LangGraph, Bedrock AgentCore, etc.) qui ne s'appliquent pas à du dev web classique
 - Marketing, listicles creux, articles d'opinion sans contenu technique
+- Tutoriels débutants triviaux
 
 ## RÈGLES IMPÉRATIVES
 
@@ -104,8 +110,11 @@ sans markdown, sans backticks :
 2. Tu retiens MAXIMUM 3 articles cumulés en "critique" + "important" (top priorité)
 3. Tu retiens MAXIMUM 3 articles en "interessant"
 4. Tu INCLUS TOUS les articles reçus dans articles_analyses, même ceux avec garde=false
-5. Tu utilises hash_unique EXACTEMENT comme reçu
+5. Tu utilises hash_unique EXACTEMENT comme reçu en entrée
 6. Le champ "titre_traduit" doit TOUJOURS être présent, même pour les articles ignorés
 7. Toutes les "raison_courte", "tldr" et "synthese_journee" doivent être EN FRANÇAIS
 8. Le "tldr" doit être PUNCHY : pas de "Aujourd'hui...", direct et factuel
 9. Sois sélectif : un digest avec 4 articles ultra-pertinents > 6 articles moyens
+10. Si AUCUN article ne touche directement à la stack PHP/MySQL/CSS/Docker, 
+    tu peux retenir des articles transverses pertinents (sécurité, IA pour devs, 
+    architecture, BDD relationnelle) MAIS en restant exigeant sur la qualité
