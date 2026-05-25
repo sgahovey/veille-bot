@@ -44,11 +44,6 @@ SOURCES: list[dict] = [
         "categorie": "backend",
     },
     {
-        "nom": "React Blog",
-        "url": "https://react.dev/rss.xml",
-        "categorie": "frontend",
-    },
-    {
         "nom": "GreenIT",
         "url": "https://www.greenit.fr/feed/",
         "categorie": "general",

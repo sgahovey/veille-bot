@@ -3,7 +3,7 @@
 ## 1. Description du projet
 
 `veille-bot` est un bot Python qui, **chaque matin à 7h (heure de La Réunion, UTC+4)**, agrège
-11 flux RSS techniques et sécurité, sélectionne via **Gemini 2.5 Flash** les articles
+10 flux RSS techniques et sécurité, sélectionne via **Gemini 2.5 Flash** les articles
 les plus pertinents pour un développeur en alternance, et publie un **digest structuré**
 sur un canal Discord via webhook.
 
@@ -35,7 +35,7 @@ dépend d'aucune librairie tierce et reste 100% testable sans mock.
 
 **Flux d'exécution quotidien :**
 
-1. Lecture parallèle des 11 flux RSS (`ThreadPoolExecutor`, max 5 workers)
+1. Lecture parallèle des 10 flux RSS (`ThreadPoolExecutor`, max 5 workers)
 2. Filtrage temporel : on ne garde que les articles publiés dans les 24h
 3. Déduplication via SQLite (clé = SHA-256 du lien)
 4. **Un seul** appel batch à Gemini → JSON structuré (classement + synthèse)
@@ -126,7 +126,6 @@ La couverture du module `src/domain` est rapportée en console.
 | Hacker News (top)   | général    | https://hnrss.org/frontpage?points=100                    |
 | Symfony Blog        | backend    | https://feeds.feedburner.com/symfony/blog                 |
 | PHP.net             | backend    | https://www.php.net/feed.atom                             |
-| React Blog          | frontend   | https://react.dev/rss.xml                                 |
 | GreenIT             | général    | https://www.greenit.fr/feed/                              |
 | Journal du Hacker   | général    | https://www.journalduhacker.net/rss                       |
 
