@@ -86,10 +86,11 @@ class DiscordRepository:
         """Construit le dict d'embed conforme aux limites Discord."""
         date_fr = _format_date_fr(digest.date_generation)
         title = _tronquer(f"☀️ Veille du {date_fr}", LIMITE_TITLE)
-        description = (
+        stats = (
             f"📊 {digest.nb_articles_analyses} articles analysés • "
             f"{digest.nb_articles_retenus} retenus"
         )
+        description = f"**{digest.tldr}**\n\n{stats}" if digest.tldr else stats
 
         fields: list[dict] = []
 
@@ -144,7 +145,7 @@ def _formater_top(analyses: list[ArticleAnalyse]) -> str:
     lignes: list[str] = []
     for analyse in analyses:
         emoji = EMOJI_CRITICITE.get(analyse.criticite, "⚪")
-        titre = _echapper_markdown(analyse.article.titre)
+        titre = _echapper_markdown(analyse.titre_traduit or analyse.article.titre)
         ligne = (
             f"{emoji} [{titre}]({analyse.article.lien})\n"
             f"   _{analyse.raison_courte}_"
@@ -157,7 +158,7 @@ def _formater_autres(analyses: list[ArticleAnalyse]) -> str:
     lignes: list[str] = []
     for analyse in analyses:
         emoji = EMOJI_CRITICITE.get(analyse.criticite, "⚪")
-        titre = _echapper_markdown(analyse.article.titre)
+        titre = _echapper_markdown(analyse.titre_traduit or analyse.article.titre)
         lignes.append(f"• {emoji} [{titre}]({analyse.article.lien})")
     return "\n".join(lignes) or "_Aucun autre article retenu._"
 

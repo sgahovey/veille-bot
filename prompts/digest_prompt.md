@@ -45,7 +45,8 @@ un JSON strictement valide selon ce schéma exact, sans aucun texte autour,
 sans markdown, sans backticks :
 
 {
-  "synthese_journee": "2-3 phrases résumant les tendances et thèmes marquants du jour, EN FRANÇAIS, orientées sur la stack du développeur",
+  "tldr": "UNE SEULE phrase choc EN FRANÇAIS résumant la journée (max 100 caractères)",
+  "synthese_journee": "2-3 phrases EN FRANÇAIS, orientées sur la stack du développeur",
   "articles_analyses": [
     {
       "hash_unique": "le hash exact reçu en entrée",
@@ -53,6 +54,7 @@ sans markdown, sans backticks :
       "criticite": "critique",
       "score": 9,
       "raison_courte": "Phrase courte EN FRANÇAIS expliquant pourquoi c'est pertinent",
+      "titre_traduit": "Titre traduit en français si l'original est en anglais, sinon titre original",
       "categorie": "securite"
     }
   ]
@@ -73,13 +75,12 @@ sans markdown, sans backticks :
 - Vulnérabilité dans une bibliothèque PHP populaire (Composer)
 - Attaque supply chain (npm, Packagist, GitHub Actions)
 
-### "important" (max 3 par jour)
+### "important" (max 2 par jour)
 - Nouvelle version majeure de Symfony, PHP, MySQL, PostgreSQL, Docker
 - Mise à jour OWASP Top 10
 - Nouveau guide RGAA ou WCAG
 - Bonne pratique de sécurité applicable à PHP/Symfony
-- Annonce officielle d'un acteur majeur de l'IA (OpenAI, Anthropic, Google) 
-  avec impact concret pour les développeurs
+- Annonce officielle d'un acteur majeur de l'IA avec impact concret pour les développeurs
 
 ### "interessant" (max 3 par jour)
 - Tutoriel technique de qualité sur PHP/Symfony/MySQL/PostgreSQL
@@ -95,19 +96,16 @@ sans markdown, sans backticks :
 - Python comme framework web (Django, FastAPI, Flask)
 - Développement mobile (Swift, Kotlin Android, Flutter, React Native)
 - Crypto, NFT, Web3, blockchain
-- NoSQL exotiques (Cassandra, DynamoDB, Redis comme sujet principal)
 - Marketing, listicles creux, articles d'opinion sans contenu technique
-- Tutoriels débutants triviaux ("Comment installer Git")
 
 ## RÈGLES IMPÉRATIVES
 
-1. Tu retiens MAXIMUM 8 articles au total (garde=true)
+1. Tu retiens MAXIMUM 6 articles au total (garde=true)
 2. Tu retiens MAXIMUM 3 articles cumulés en "critique" + "important" (top priorité)
-3. Tu INCLUS TOUS les articles reçus dans articles_analyses, même ceux avec garde=false
-4. Tu utilises hash_unique EXACTEMENT comme reçu
-5. Si un article parle d'une techno hors-stack MAIS aborde un concept transverse 
-   utile (architecture, sécurité, perf), tu peux le garder en "interessant" avec 
-   un score ≤ 6
-6. Toutes les "raison_courte" et la "synthese_journee" doivent être EN FRANÇAIS, 
-   même si l'article est en anglais
-7. Sois sélectif : un digest avec 4 articles ultra-pertinents > 8 articles moyens
+3. Tu retiens MAXIMUM 3 articles en "interessant"
+4. Tu INCLUS TOUS les articles reçus dans articles_analyses, même ceux avec garde=false
+5. Tu utilises hash_unique EXACTEMENT comme reçu
+6. Le champ "titre_traduit" doit TOUJOURS être présent, même pour les articles ignorés
+7. Toutes les "raison_courte", "tldr" et "synthese_journee" doivent être EN FRANÇAIS
+8. Le "tldr" doit être PUNCHY : pas de "Aujourd'hui...", direct et factuel
+9. Sois sélectif : un digest avec 4 articles ultra-pertinents > 6 articles moyens

@@ -132,6 +132,7 @@ class GeminiRepository:
         """Convertit la réponse JSON Gemini en Digest typé."""
         index_par_hash = {a.hash_unique: a for a in articles}
         analyses_brutes = reponse.get("articles_analyses", [])
+        tldr = str(reponse.get("tldr", "")).strip()
         synthese = str(reponse.get("synthese_journee", "")).strip()
 
         analyses: list[ArticleAnalyse] = []
@@ -159,6 +160,7 @@ class GeminiRepository:
                     score=score_int,
                     raison_courte=str(brut.get("raison_courte", "")).strip(),
                     categorie=categorie,
+                    titre_traduit=str(brut.get("titre_traduit", "")).strip(),
                 )
             )
 
@@ -179,6 +181,7 @@ class GeminiRepository:
             nb_articles_retenus=len(retenus),
             top_priorites=top,
             autres_articles=autres,
+            tldr=tldr,
             synthese_journee=synthese or "Synthèse indisponible.",
         )
 

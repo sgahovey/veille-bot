@@ -46,7 +46,9 @@ class ArticleAnalyse:
         criticite: "critique" | "important" | "interessant" | "ignore".
         score: Note de pertinence entre 1 et 10.
         raison_courte: Une phrase justifiant la criticité.
-        categorie: "securite" | "backend" | "frontend" | "devops" | "general".
+        categorie: "securite" | "backend" | "frontend" | "devops" | "ia" | "general".
+        titre_traduit: Titre traduit en français par l'IA. Vide si non fourni
+            — utiliser ``article.titre`` comme fallback.
     """
 
     article: Article
@@ -55,6 +57,7 @@ class ArticleAnalyse:
     score: int
     raison_courte: str
     categorie: str
+    titre_traduit: str = ""
 
 
 @dataclass(frozen=True)
@@ -67,6 +70,7 @@ class Digest:
         nb_articles_retenus: Nombre d'articles avec ``garde=True``.
         top_priorites: Articles "critique" + "important" (max 3).
         autres_articles: Articles retenus hors top priorité.
+        tldr: Une seule phrase choc résumant la journée (max 100 caractères).
         synthese_journee: Résumé global de 2-3 phrases produit par l'IA.
     """
 
@@ -75,4 +79,5 @@ class Digest:
     nb_articles_retenus: int
     top_priorites: list[ArticleAnalyse] = field(default_factory=list)
     autres_articles: list[ArticleAnalyse] = field(default_factory=list)
+    tldr: str = ""
     synthese_journee: str = ""

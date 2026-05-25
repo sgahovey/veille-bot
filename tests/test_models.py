@@ -48,6 +48,22 @@ def test_article_analyse_porte_un_article_et_des_metadonnees() -> None:
     assert analyse.article is article
     assert analyse.garde is True
     assert analyse.score == 8
+    assert analyse.titre_traduit == ""  # défaut
+
+
+def test_article_analyse_accepte_un_titre_traduit() -> None:
+    article = _article_fixture()
+    analyse = ArticleAnalyse(
+        article=article,
+        garde=True,
+        criticite="important",
+        score=8,
+        raison_courte="Pertinent",
+        categorie="ia",
+        titre_traduit="Nouveau modèle GPT publié",
+    )
+    assert analyse.titre_traduit == "Nouveau modèle GPT publié"
+    assert analyse.categorie == "ia"
 
 
 def test_digest_initialise_les_listes_vides_par_defaut() -> None:
@@ -58,7 +74,19 @@ def test_digest_initialise_les_listes_vides_par_defaut() -> None:
     )
     assert digest.top_priorites == []
     assert digest.autres_articles == []
+    assert digest.tldr == ""
     assert digest.synthese_journee == ""
+
+
+def test_digest_accepte_un_tldr() -> None:
+    digest = Digest(
+        date_generation=datetime(2026, 5, 25, 5, 0, tzinfo=timezone.utc),
+        nb_articles_analyses=10,
+        nb_articles_retenus=4,
+        tldr="CVE critique Symfony 7.2 corrigée en urgence.",
+        synthese_journee="Journée dominée par la sécurité.",
+    )
+    assert digest.tldr.startswith("CVE critique")
 
 
 def test_digest_est_immuable() -> None:
