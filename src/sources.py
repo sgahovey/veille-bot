@@ -53,4 +53,29 @@ SOURCES: list[dict] = [
         "url": "https://www.journalduhacker.net/rss",
         "categorie": "general",
     },
+    {
+        "nom": "PHP Watch",
+        "url": "https://php.watch/feed.atom",
+        "categorie": "backend",
+    },
+    {
+        "nom": "CSS-Tricks",
+        "url": "https://css-tricks.com/feed/",
+        "categorie": "frontend",
+    },
+    {
+        "nom": "Smashing Magazine",
+        "url": "https://www.smashingmagazine.com/feed/",
+        "categorie": "frontend",
+    },
+    {
+        "nom": "Snyk Blog",
+        "url": "https://snyk.io/blog/feed/",
+        "categorie": "securite",
+    },
+    {
+        "nom": "Stack Overflow Blog",
+        "url": "https://stackoverflow.blog/feed/",
+        "categorie": "general",
+    },
 ]
