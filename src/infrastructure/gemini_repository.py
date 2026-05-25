@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 CHEMIN_PROMPT = Path(__file__).resolve().parent.parent.parent / "prompts" / "digest_prompt.md"
 
 CRITICITES_AUTORISEES = {"critique", "important", "interessant", "ignore"}
-CATEGORIES_AUTORISEES = {"securite", "backend", "frontend", "devops", "general"}
+CATEGORIES_AUTORISEES = {"securite", "backend", "frontend", "devops", "ia", "general"}
 MAX_TOP_PRIORITES = 3
 MAX_RETRY = 3
 BACKOFF_BASE_SECONDES = 2
