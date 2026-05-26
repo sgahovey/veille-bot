@@ -136,6 +136,39 @@ La couverture du module `src/domain` est rapportée en console.
 
 La liste est éditable dans `src/sources.py`.
 
-## 10. Licence
+## 10. Récap hebdomadaire (bonus)
+
+En complément du digest quotidien, un second workflow tourne **chaque dimanche
+à 19h (heure de La Réunion)** : `.github/workflows/weekly-recap.yml`.
+
+### Ce qu'il fait
+
+1. Lit dans SQLite (table `articles_analyses`) toutes les analyses retenues
+   par les digests quotidiens de la semaine ISO en cours (lundi 00h → dimanche 23h59 UTC).
+2. Envoie le tout à Gemini avec un prompt dédié (`prompts/weekly_recap_prompt.md`)
+   qui demande : top 3 de la semaine, tendances, 3 takeaways actionnables.
+3. Publie sur Discord **un gros message de 6 embeds colorés** : header, top 3,
+   répartition par catégorie, tendances, à retenir, lien vers le Markdown.
+4. Génère un fichier `docs/veille/YYYY-Wnn.md` (un par semaine) auto-commité
+   sur le repo via un script bash avec retry/rebase.
+
+### Structure des fichiers Markdown générés
+
+Les récaps sont archivés dans `docs/veille/` au format ISO :
+`docs/veille/2026-W22.md`, `docs/veille/2026-W23.md`, etc.
+
+Ils servent d'archive consultable et de matière brute pour ton dossier CDA
+(preuves de veille régulière sur l'année).
+
+### Différences avec le digest quotidien
+
+| | Digest quotidien | Récap hebdomadaire |
+|---|---|---|
+| Cron | Tous les jours 7h Réunion | Dimanche 19h Réunion |
+| Source | RSS 24h | Table `articles_analyses` (semaine) |
+| Sortie | 1 embed Discord | 6 embeds Discord + fichier `.md` |
+| Persistance | `data/seen.db` | `data/seen.db` + `docs/veille/*.md` |
+
+## 11. Licence
 
 MIT

@@ -9,7 +9,7 @@ couches infrastructure et application.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @dataclass(frozen=True)
@@ -81,3 +81,33 @@ class Digest:
     autres_articles: list[ArticleAnalyse] = field(default_factory=list)
     tldr: str = ""
     synthese_journee: str = ""
+
+
+@dataclass(frozen=True)
+class WeeklyRecap:
+    """Récap hebdomadaire produit par le workflow du dimanche soir.
+
+    Attributes:
+        semaine_iso: Identifiant ISO de la semaine (ex: ``"2026-W21"``).
+        date_debut: Lundi 00:00 UTC de la semaine couverte.
+        date_fin: Dimanche 23:59 UTC de la semaine couverte.
+        nb_articles_total: Nombre total d'analyses retenues sur la semaine.
+        top_3: Trois articles les plus marquants désignés par l'IA.
+        par_categorie: Dictionnaire {categorie -> [analyses]} pour la
+            répartition affichée dans l'embed et le Markdown.
+        tendances: 2-3 phrases sur les thèmes récurrents de la semaine.
+        a_retenir: Trois takeaways actionnables pour le développeur.
+        date_generation: Horodatage UTC de la génération du récap.
+    """
+
+    semaine_iso: str
+    date_debut: datetime
+    date_fin: datetime
+    nb_articles_total: int
+    top_3: list[ArticleAnalyse] = field(default_factory=list)
+    par_categorie: dict[str, list[ArticleAnalyse]] = field(default_factory=dict)
+    tendances: str = ""
+    a_retenir: list[str] = field(default_factory=list)
+    date_generation: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )

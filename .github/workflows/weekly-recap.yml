@@ -1,0 +1,64 @@
+name: Récap hebdomadaire de veille
+
+on:
+  schedule:
+    # 15h UTC = 19h La Réunion (UTC+4, pas de DST) le dimanche.
+    - cron: '0 15 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  recap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run weekly recap
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DATABASE_PATH: data/seen.db
+          LOG_LEVEL: INFO
+        run: python -m src.recap_main
+
+      - name: Commit Markdown record
+        if: success()
+        run: |
+          set -e
+          git config user.name "veille-bot"
+          git config user.email "bot@users.noreply.github.com"
+
+          git add docs/veille/
+          if git diff --staged --quiet; then
+            echo "Aucun nouveau fichier Markdown a commit."
+            exit 0
+          fi
+
+          git commit -m "docs: recap veille semaine [skip ci]"
+
+          for tentative in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Push reussi a la tentative $tentative."
+              exit 0
+            fi
+            echo "::warning::Push rejete (tentative $tentative), rebase puis retry."
+            git pull --rebase origin main
+          done
+
+          echo "::error::Echec du push apres 3 tentatives."
+          exit 1

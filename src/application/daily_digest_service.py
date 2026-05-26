@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Callable
 
+from src.domain.analyse_repository import AnalyseRepository
 from src.domain.article_filter import filtrer_dernieres_24h
 from src.domain.deduplicator import Deduplicator
 from src.domain.models import Article
@@ -34,6 +35,7 @@ class DailyDigestService:
         deduplicator: Deduplicator,
         gemini_repo: GeminiRepository,
         discord_repo: DiscordRepository,
+        analyse_repo: AnalyseRepository | None = None,
     ) -> None:
         """Injecte toutes les dépendances nécessaires.
 
@@ -43,12 +45,15 @@ class DailyDigestService:
             deduplicator: Filtre des articles déjà traités.
             gemini_repo: Client Gemini pour la génération du digest.
             discord_repo: Client Discord pour la publication.
+            analyse_repo: Optionnel — si fourni, chaque analyse retenue est
+                persistée pour alimenter le récap hebdomadaire.
         """
         self._sources = sources
         self._rss_reader = rss_reader
         self._deduplicator = deduplicator
         self._gemini_repo = gemini_repo
         self._discord_repo = discord_repo
+        self._analyse_repo = analyse_repo
 
     def executer(self) -> None:
         """Lance le pipeline complet du digest quotidien."""
@@ -77,6 +82,14 @@ class DailyDigestService:
         publie = self._discord_repo.publier_digest(digest)
         if publie:
             self._deduplicator.marquer_traites(articles_nouveaux)
+            if self._analyse_repo is not None:
+                analyses_retenues = digest.top_priorites + digest.autres_articles
+                for analyse in analyses_retenues:
+                    self._analyse_repo.enregistrer_analyse(analyse)
+                logger.info(
+                    "analyses_persistees",
+                    extra={"contexte": {"count": len(analyses_retenues)}},
+                )
             logger.info(
                 "execution_terminee",
                 extra={

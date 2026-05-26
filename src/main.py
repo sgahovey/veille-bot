@@ -73,6 +73,7 @@ def main() -> int:
             deduplicator=deduplicator,
             gemini_repo=gemini,
             discord_repo=discord,
+            analyse_repo=seen_repo,
         )
         service.executer()
     except Exception:  # noqa: BLE001 — capture finale, log + exit 1

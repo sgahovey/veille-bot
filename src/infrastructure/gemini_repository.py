@@ -17,11 +17,13 @@ from typing import Any
 from google import genai
 from google.genai import types
 
-from src.domain.models import Article, ArticleAnalyse, Digest
+from src.domain.models import Article, ArticleAnalyse, Digest, WeeklyRecap
 
 logger = logging.getLogger(__name__)
 
-CHEMIN_PROMPT = Path(__file__).resolve().parent.parent.parent / "prompts" / "digest_prompt.md"
+DOSSIER_PROMPTS = Path(__file__).resolve().parent.parent.parent / "prompts"
+CHEMIN_PROMPT = DOSSIER_PROMPTS / "digest_prompt.md"
+CHEMIN_PROMPT_RECAP = DOSSIER_PROMPTS / "weekly_recap_prompt.md"
 
 CRITICITES_AUTORISEES = {"critique", "important", "interessant", "ignore"}
 CATEGORIES_AUTORISEES = {"securite", "backend", "frontend", "devops", "ia", "general"}
@@ -43,6 +45,7 @@ class GeminiRepository:
         self._client = genai.Client(api_key=api_key)
         self._model = model
         self._prompt_template = CHEMIN_PROMPT.read_text(encoding="utf-8")
+        self._prompt_recap_template = CHEMIN_PROMPT_RECAP.read_text(encoding="utf-8")
 
     def generer_digest(self, articles: list[Article]) -> Digest:
         """Génère un Digest à partir d'articles via Gemini.
@@ -185,6 +188,142 @@ class GeminiRepository:
             synthese_journee=synthese or "Synthèse indisponible.",
         )
 
+    def generer_recap_hebdo(
+        self,
+        analyses: list[ArticleAnalyse],
+        date_debut: datetime,
+        date_fin: datetime,
+        semaine_iso: str,
+    ) -> WeeklyRecap:
+        """Génère un ``WeeklyRecap`` à partir des analyses retenues sur la semaine.
+
+        Args:
+            analyses: Articles avec ``garde=True`` de la semaine écoulée.
+            date_debut: Lundi 00:00 UTC.
+            date_fin: Dimanche 23:59 UTC.
+            semaine_iso: Identifiant ISO (ex: ``"2026-W21"``).
+
+        Returns:
+            Un ``WeeklyRecap`` complet — soit issu de l'IA, soit un fallback
+            minimal si l'IA est indisponible.
+        """
+        par_categorie = _grouper_par_categorie(analyses)
+
+        if not analyses:
+            return WeeklyRecap(
+                semaine_iso=semaine_iso,
+                date_debut=date_debut,
+                date_fin=date_fin,
+                nb_articles_total=0,
+                par_categorie=par_categorie,
+                tendances="Aucun article retenu cette semaine.",
+                date_generation=datetime.now(timezone.utc),
+            )
+
+        prompt = self._construire_prompt_recap(analyses, date_debut, date_fin)
+        reponse_json = self._appeler_avec_retry(prompt)
+
+        if reponse_json is None:
+            logger.warning("gemini_recap_fallback_active")
+            return self._recap_fallback(analyses, date_debut, date_fin, semaine_iso)
+
+        try:
+            return self._mapper_vers_recap(
+                reponse_json, analyses, date_debut, date_fin, semaine_iso
+            )
+        except (KeyError, ValueError, TypeError) as exc:
+            logger.error(
+                "gemini_recap_mapping_echec",
+                extra={"contexte": {"erreur": str(exc)}},
+            )
+            return self._recap_fallback(analyses, date_debut, date_fin, semaine_iso)
+
+    def _construire_prompt_recap(
+        self,
+        analyses: list[ArticleAnalyse],
+        date_debut: datetime,
+        date_fin: datetime,
+    ) -> str:
+        """Sérialise les analyses et injecte dates + JSON dans le template."""
+        articles_json = json.dumps(
+            [
+                {
+                    "hash_unique": a.article.hash_unique,
+                    "titre": a.titre_traduit or a.article.titre,
+                    "resume": a.article.resume,
+                    "source": a.article.source,
+                    "criticite": a.criticite,
+                    "categorie": a.categorie,
+                    "score": a.score,
+                    "raison_courte": a.raison_courte,
+                }
+                for a in analyses
+            ],
+            ensure_ascii=False,
+        )
+        prompt = self._prompt_recap_template
+        prompt = prompt.replace("{articles_json}", articles_json)
+        prompt = prompt.replace("{date_debut}", date_debut.strftime("%d/%m/%Y"))
+        prompt = prompt.replace("{date_fin}", date_fin.strftime("%d/%m/%Y"))
+        return prompt
+
+    def _mapper_vers_recap(
+        self,
+        reponse: dict[str, Any],
+        analyses: list[ArticleAnalyse],
+        date_debut: datetime,
+        date_fin: datetime,
+        semaine_iso: str,
+    ) -> WeeklyRecap:
+        """Construit un ``WeeklyRecap`` à partir de la réponse Gemini."""
+        tendances = str(reponse.get("tendances", "")).strip()
+        top_3_hashes = list(reponse.get("top_3_hashes", []))[:3]
+        a_retenir_brut = list(reponse.get("a_retenir", []))[:3]
+        a_retenir = [str(item).strip() for item in a_retenir_brut if str(item).strip()]
+
+        index_par_hash = {a.article.hash_unique: a for a in analyses}
+        top_3 = [
+            index_par_hash[h]
+            for h in top_3_hashes
+            if h in index_par_hash
+        ]
+
+        return WeeklyRecap(
+            semaine_iso=semaine_iso,
+            date_debut=date_debut,
+            date_fin=date_fin,
+            nb_articles_total=len(analyses),
+            top_3=top_3,
+            par_categorie=_grouper_par_categorie(analyses),
+            tendances=tendances or "Synthèse hebdomadaire indisponible.",
+            a_retenir=a_retenir,
+            date_generation=datetime.now(timezone.utc),
+        )
+
+    def _recap_fallback(
+        self,
+        analyses: list[ArticleAnalyse],
+        date_debut: datetime,
+        date_fin: datetime,
+        semaine_iso: str,
+    ) -> WeeklyRecap:
+        """Récap minimal si l'IA est indisponible — top 3 par score brut."""
+        tries = sorted(analyses, key=_cle_tri_analyse)
+        return WeeklyRecap(
+            semaine_iso=semaine_iso,
+            date_debut=date_debut,
+            date_fin=date_fin,
+            nb_articles_total=len(analyses),
+            top_3=tries[:3],
+            par_categorie=_grouper_par_categorie(analyses),
+            tendances=(
+                "Synthèse IA indisponible cette semaine. Top 3 calculé par "
+                "tri sur criticité puis score."
+            ),
+            a_retenir=[],
+            date_generation=datetime.now(timezone.utc),
+        )
+
     def _digest_fallback(self, articles: list[Article]) -> Digest:
         """Digest minimal si l'IA est indisponible : tout en ``interessant``."""
         analyses = [
@@ -215,3 +354,15 @@ def _cle_tri_analyse(analyse: ArticleAnalyse) -> tuple[int, int]:
     """Clé de tri : criticité décroissante puis score décroissant."""
     ordre = {"critique": 0, "important": 1, "interessant": 2, "ignore": 3}
     return (ordre.get(analyse.criticite, 3), -analyse.score)
+
+
+def _grouper_par_categorie(
+    analyses: list[ArticleAnalyse],
+) -> dict[str, list[ArticleAnalyse]]:
+    """Regroupe les analyses par catégorie, trie chaque groupe par criticité/score."""
+    groupes: dict[str, list[ArticleAnalyse]] = {}
+    for analyse in analyses:
+        groupes.setdefault(analyse.categorie, []).append(analyse)
+    for cat in groupes:
+        groupes[cat].sort(key=_cle_tri_analyse)
+    return groupes
