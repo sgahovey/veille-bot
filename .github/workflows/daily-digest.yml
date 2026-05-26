@@ -38,22 +38,31 @@ jobs:
           LOG_LEVEL: INFO
         run: python -m src.main
 
-      - name: Synchroniser avec le remote avant l'auto-commit
-        # Evite les rejets de push si l'utilisateur a push pendant le run.
-        # --autostash met de cote la modification non commitee de seen.db,
-        # le pull --rebase ramene les commits distants, puis pop restaure
-        # nos changements -> l'auto-commit suivant peut fast-forward.
+      - name: Persist seen.db
+        # Commit + push manuel avec retry/rebase pour resister a une race
+        # avec un push utilisateur survenant pendant le run.
         if: success()
         run: |
+          set -e
           git config user.name "veille-bot"
           git config user.email "bot@users.noreply.github.com"
-          git pull --rebase --autostash origin main
 
-      - name: Persist seen.db
-        if: success()
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: update seen.db [skip ci]"
-          file_pattern: 'data/seen.db'
-          commit_user_name: 'veille-bot'
-          commit_user_email: 'bot@users.noreply.github.com'
+          git add data/seen.db
+          if git diff --staged --quiet; then
+            echo "Aucune modification de seen.db a commit."
+            exit 0
+          fi
+
+          git commit -m "chore: update seen.db [skip ci]"
+
+          for tentative in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Push reussi a la tentative $tentative."
+              exit 0
+            fi
+            echo "::warning::Push rejete (tentative $tentative), rebase puis retry."
+            git pull --rebase origin main
+          done
+
+          echo "::error::Echec du push apres 3 tentatives."
+          exit 1
